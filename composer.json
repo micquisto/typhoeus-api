@@ -1,0 +1,30 @@
+{
+    "name": "typhoeus/api",
+    "description": "A Typhoeus package built in Laravel.",
+    "type": "package",
+    "require": {
+        "jenssegers/mongodb": "^3.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Typhoeus\\Api\\": ""
+        }
+    },
+    "authors": [
+        {
+            "name": "Jan Michael Quisto",
+            "email": "michaelq@plumbersstock.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Typhoeus\\Api\\Providers\\AppServiceProvider",
+                "Typhoeus\\Api\\Providers\\ConfigServiceProvider",
+                "Typhoeus\\Api\\Providers\\MiddlewareServiceProvider",
+                "Typhoeus\\Api\\Providers\\RouteServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable"
+}
