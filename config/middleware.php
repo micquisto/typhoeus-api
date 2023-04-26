@@ -6,9 +6,9 @@
 
 return [
     'route' => [
-        // 'api-middleware' => \Typhoeus\Api\Middleware\ApiMiddleware::class,
+         'api-middleware' => \Typhoeus\Api\Middleware\ApiMiddleware::class,
     ],
     'groups' => [
-        // 'api' => \Typhoeus\Api\Middlware\ApiMiddlewareGroup::class,
+        // 'api' => \Typhoeus\Api\Middleware\ApiMiddlewareGroup::class,
     ]
 ];
