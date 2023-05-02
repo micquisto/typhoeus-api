@@ -38,7 +38,7 @@ class TyphoeusProducts extends Model
     /**
      * @var TyphoeusLocations
      */
-    protected TyphoeusLocations $vendor;
+    protected $vendor;
 
     /**
      * @var Helper 

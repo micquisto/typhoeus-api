@@ -35,7 +35,8 @@ class ApiMiddleware
      * @return Application|Redirector|RedirectResponse
      */
     public function handle(Request $request, Closure $next) {
-        //dd(json_encode($request->all()));
+	    //dd(json_encode($request->all()));
+	//dd($request->getContent());
         $invalid = false;
         $message = "";
         $code = 404;
@@ -49,23 +50,23 @@ class ApiMiddleware
             $invalid = true;
             $message = 'Permission denied!!';
         }
-        if ($hashSecret == null || $authSignature != md5($authKey.$hashSecret.$requestJson)) {
+        if (!$invalid && ($hashSecret == null || $authSignature != md5($authKey.$hashSecret.$requestJson))) {
             $invalid = true;
             $message = 'Permission denied!!!';
             $code = 400;
         }
         $requestTypes = config(Helper::getPackageName() . '::apirequest.requests.types');
-        if(!$request['requestType']) {
+        if(!$request['requestType'] && ! $invalid) {
             $invalid = true;
             $message = 'Missing requestType.';
-        } else if(!in_array($request['requestType'], $requestTypes)) {
+        } else if(!in_array($request['requestType'], $requestTypes) && !$invalid) {
             $invalid = true;
             $message = 'Invalid requestType.';
-        } else if (!$request['shippingZip']) {
+        } else if (!$request['shippingZip'] && !$invalid) {
             $invalid = true;
             $message = 'Missing shippingZip.';
             $code = 400;
-        }  else if (!$request['products']) {
+        }  else if (!$request['products'] && !$invalid) {
             $invalid = true;
             $message = 'Missing products.';
             $code = 400;

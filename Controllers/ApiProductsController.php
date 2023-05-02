@@ -23,7 +23,7 @@ class ApiProductsController extends Controller
      */
     public function getProducts(Request $request)
     {
-        //dd($request['products']);
+        //dd($request->body()->all());
         $ids = json_decode($request['products'],true);
         $dataType = $request['dataType'];
         $zip = $request['shippingZip'];
