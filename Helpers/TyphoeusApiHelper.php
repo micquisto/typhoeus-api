@@ -1,12 +1,18 @@
 <?php
-
 /**
  * Product Management Helper
  */
 
 namespace Typhoeus\Api\Helpers;
-
+use Typhoeus\Catalog\Checkout\ShippingMethod\Connectship\API;
+use Typhoeus\Catalog\Checkout\ShippingMethod\Connectship\NameAddress;
 class TyphoeusApiHelper {
+
+    private $dataType = [
+        "sku" => "productId",
+        "id" => "productId",
+        "mpn" => "mpn"
+    ];
 
     /**
      * @var string $packageName
@@ -54,4 +60,52 @@ class TyphoeusApiHelper {
 
         return (file_exists($filepath)) ? $path : null;
     }
+
+    /**
+     * @param $key
+     * @return false|string
+     */
+    public function getDataType($key) {
+        if (array_key_exists($key, $this->dataType)) {
+            return $this->dataType[$key];
+        }
+        return false;
+    }
+
+    public function estimateShipping($zip = null, $weight = 0, $country = 'US')
+    {
+        $nameAddress = new NameAddress();
+        $nameAddress->postalCode	= $zip;
+        $nameAddress->countrySymbol	= "UNITED_STATES";
+        $nameAddress->countryCode	= "US";
+        if ($weight == 0) $weight = 12;
+        $packageData	= array(
+            "weight" => $weight
+        );
+
+        $services = array(
+            //"TANDATA_UPS.UPS.GND",
+            //"TANDATA_UPS.UPS.NDA",
+            //"TANDATA_UPS.UPS.2DA",
+           // "TANDATA_UPS.UPS.3DA",
+            //"TANDATA_UPS.UPS.SPPS",
+            //"TANDATA_UPS.UPS.SPSTD"
+            "TANDATA_FEDEXFSMS.FEDEX.GND"
+            //"TANDATA_FEDEXFSMS.FEDEX.STD",
+           // "TANDATA_FEDEXFSMS.FEDEX.2DA",
+           // "TANDATA_FEDEXFSMS.FEDEX.SP_PS",
+           // "CONNECTSHIP_UPSMAILINNOVATIONS.UPS.EPD",
+           // "CONNECTSHIP_UPSMAILINNOVATIONS.UPS.FIRST",
+          //  "CONNECTSHIP_ENDICIA.USPS.FIRST",
+           // "CONNECTSHIP_ENDICIA.USPS.PRIORITY",
+            //"CONNECTSHIP_ENDICIA.USPS.PARCELPOST",
+           // "CONNECTSHIP_ENDICIA.USPS.EXPR"
+        );
+
+
+        $shippings = json_decode(json_encode(API::rate($services, $nameAddress, $packageData)), true);
+
+        return $shippings['item']['resultData']['base']['amount'];
+    }
+
 }

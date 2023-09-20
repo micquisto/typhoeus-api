@@ -3,7 +3,10 @@
 /**
  * Typhoeus API api routes
  */
-
+use Typhoeus\Api\Controllers\ApiProductsController;
+Route::middleware('api-middleware')->group(function () {
+    Route::post('/ps-api/products', [ApiProductsController::class, 'getProducts']);//->middleware('api-middleware');
+});
 
 // Sample route w/ sample middleware - please delete this
 
