@@ -1,18 +1,14 @@
 <?php
 /**
- * Product Management Helper
+ * API Helper
  */
 
 namespace Typhoeus\Api\Helpers;
 use Typhoeus\Catalog\Checkout\ShippingMethod\Connectship\API;
 use Typhoeus\Catalog\Checkout\ShippingMethod\Connectship\NameAddress;
-class TyphoeusApiHelper {
+class ApiHelper {
 
-    private $dataType = [
-        "sku" => "productId",
-        "id" => "productId",
-        "mpn" => "mpn"
-    ];
+    private $dataType;
 
     /**
      * @var string $packageName
@@ -20,11 +16,55 @@ class TyphoeusApiHelper {
     private static $packageName = 'api';
 
     /**
+     * @var string
+     */
+    private $countrySymbol;
+
+    /**
+     * @var string
+     */
+    private $countryCode;
+
+    /**
+     * @var string[]
+     */
+    private $services;
+
+    public function __construct()
+    {
+        $this->dataType = [
+            "sku" => "productId",
+            "id" => "productId",
+            "mpn" => "mpn"
+        ];
+        $this->countrySymbol = "UNITED_STATES";
+        $this->countryCode = "US";
+        $this->services = array(
+            //"TANDATA_UPS.UPS.GND",
+            //"TANDATA_UPS.UPS.NDA",
+            //"TANDATA_UPS.UPS.2DA",
+            // "TANDATA_UPS.UPS.3DA",
+            //"TANDATA_UPS.UPS.SPPS",
+            //"TANDATA_UPS.UPS.SPSTD"
+            "TANDATA_FEDEXFSMS.FEDEX.GND"
+            //"TANDATA_FEDEXFSMS.FEDEX.STD",
+            // "TANDATA_FEDEXFSMS.FEDEX.2DA",
+            // "TANDATA_FEDEXFSMS.FEDEX.SP_PS",
+            // "CONNECTSHIP_UPSMAILINNOVATIONS.UPS.EPD",
+            // "CONNECTSHIP_UPSMAILINNOVATIONS.UPS.FIRST",
+            //  "CONNECTSHIP_ENDICIA.USPS.FIRST",
+            // "CONNECTSHIP_ENDICIA.USPS.PRIORITY",
+            //"CONNECTSHIP_ENDICIA.USPS.PARCELPOST",
+            // "CONNECTSHIP_ENDICIA.USPS.EXPR"
+        );
+    }
+
+    /**
      * Gets the package name
      * @return string
      */
-    public static function getPackageName() {
-
+    public static function getPackageName(): string
+    {
         return self::$packageName;
     }
 
@@ -33,7 +73,8 @@ class TyphoeusApiHelper {
      * @param object $object
      * @return string
      */
-    public static function getWorkingPath($object) {
+    public static function getWorkingPath($object): string
+    {
 
         $path = (new \ReflectionClass(get_class($object)))->getFileName();
         $path = str_replace('vendor', 'workbench', $path);
@@ -53,7 +94,7 @@ class TyphoeusApiHelper {
      * @param string $filename
      * @return string|null
      */
-    public static function getTemplatePath($dir, $filename) {
+    public static function getTemplatePath(string $dir, string $filename) {
 
         $path = app_path() . DIRECTORY_SEPARATOR . 'Template' .  DIRECTORY_SEPARATOR . strtolower($dir) . DIRECTORY_SEPARATOR . self::getPackageName();
         $filepath = $path . DIRECTORY_SEPARATOR . $filename;
@@ -72,40 +113,35 @@ class TyphoeusApiHelper {
         return false;
     }
 
-    public function estimateShipping($zip = null, $weight = 0, $country = 'US')
+    /**
+     * @param $zip
+     * @param $weight
+     * @param $country
+     * @return mixed
+     */
+    public function estimateShipping($zip, $weight )
     {
         $nameAddress = new NameAddress();
         $nameAddress->postalCode	= $zip;
-        $nameAddress->countrySymbol	= "UNITED_STATES";
-        $nameAddress->countryCode	= "US";
+        $nameAddress->countrySymbol	= $this->countrySymbol;
+        $nameAddress->countryCode	= $this->countryCode;
         if ($weight == 0) $weight = 12;
         $packageData	= array(
             "weight" => $weight
         );
-
-        $services = array(
-            //"TANDATA_UPS.UPS.GND",
-            //"TANDATA_UPS.UPS.NDA",
-            //"TANDATA_UPS.UPS.2DA",
-           // "TANDATA_UPS.UPS.3DA",
-            //"TANDATA_UPS.UPS.SPPS",
-            //"TANDATA_UPS.UPS.SPSTD"
-            "TANDATA_FEDEXFSMS.FEDEX.GND"
-            //"TANDATA_FEDEXFSMS.FEDEX.STD",
-           // "TANDATA_FEDEXFSMS.FEDEX.2DA",
-           // "TANDATA_FEDEXFSMS.FEDEX.SP_PS",
-           // "CONNECTSHIP_UPSMAILINNOVATIONS.UPS.EPD",
-           // "CONNECTSHIP_UPSMAILINNOVATIONS.UPS.FIRST",
-          //  "CONNECTSHIP_ENDICIA.USPS.FIRST",
-           // "CONNECTSHIP_ENDICIA.USPS.PRIORITY",
-            //"CONNECTSHIP_ENDICIA.USPS.PARCELPOST",
-           // "CONNECTSHIP_ENDICIA.USPS.EXPR"
-        );
-
-
+        $services = $this->services;
         $shippings = json_decode(json_encode(API::rate($services, $nameAddress, $packageData)), true);
-
         return $shippings['item']['resultData']['base']['amount'];
+    }
+
+    /**
+     * @param $string
+     * @return bool
+     */
+    function isJson($string): bool
+    {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 
 }

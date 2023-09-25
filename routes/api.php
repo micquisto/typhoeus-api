@@ -4,18 +4,15 @@
  * Typhoeus API api routes
  */
 use Typhoeus\Api\Controllers\ApiProductsController;
+use Typhoeus\Api\Controllers\Typhoeus\ApiOrdersController;
+use Typhoeus\Api\Controllers\Typhoeus\ApiAdminController;
+
 Route::middleware('api-middleware')->group(function () {
-    Route::post('/ps-api/products', [ApiProductsController::class, 'getProducts']);//->middleware('api-middleware');
+    Route::middleware('api-product-middleware')->group(function () {
+        Route::post('/ps-api/products', [ApiProductsController::class, 'getProducts']);
+    });
+    Route::post('/ps-api/orders', [ApiOrdersController::class, 'process']);
 });
 
-// Sample route w/ sample middleware - please delete this
+Route::post('/ps-api/admin', [ApiAdminController::class, 'process']);
 
-// Route::middleware('api-middleware')->group(function () {
-
-//     Route::get('/sample-api', function() {
-
-//         dump('Route service provider is working.');
-//         dump('Route api route is working.');
-//     });
-
-// });

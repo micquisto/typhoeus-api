@@ -3,7 +3,7 @@
 namespace Typhoeus\Api\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Typhoeus\Api\Helpers\TyphoeusApiHelper as Helper;
+use Typhoeus\Api\Helpers\ApiHelper as Helper;
 
 class ConfigServiceProvider extends ServiceProvider
 {
