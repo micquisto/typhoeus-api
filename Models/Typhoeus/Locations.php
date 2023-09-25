@@ -1,22 +1,10 @@
 <?php
+namespace Typhoeus\Api\Models\Typhoeus;
 
-namespace Typhoeus\Api\Models;
+use Typhoeus\Api\Models\SqlModel;
 
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Database\Eloquent\Model;
-
-class TyphoeusLocations extends Model
+class Locations extends SqlModel
 {
-    /**
-     * @var string
-     */
-    protected $table;
-
-    /**
-     * @var string
-     */
-    protected $connection;
-
     /**
      * @var array
      */
@@ -28,18 +16,12 @@ class TyphoeusLocations extends Model
     protected $data;
 
     /**
-     * @var Application
-     */
-     private  $app;
-
-     /**
      *
      */
     public function __construct()
     {
-        $this->app = app();
-        $this->connection = 'typhoeus';
-        $this->table = 'location_ids';
+        $this->connection = "typhoeus";
+        $this->table = "location_ids";
         parent::__construct();
     }
 
@@ -58,7 +40,7 @@ class TyphoeusLocations extends Model
 
     /**
      * @param $key
-     * @return $this->data
+     * @return array|mixed
      */
     public function getData($key = null)
     {
@@ -66,6 +48,22 @@ class TyphoeusLocations extends Model
             return array_key_exists($key, $this->data) ? $this->data[$key] : [];
         }
         return $this->data;
+    }
+
+    /**
+     * @param $id
+     * @return array|bool|mixed
+     */
+    public function getLocationById($id)
+    {
+        if($id) {
+            $data = $this->select('*')->where('id',"=", $id)->first();
+            if($data !== null) {
+                $this->data = $data->attributes;
+                return $this;
+            }
+        }
+        return null;
     }
 
 }

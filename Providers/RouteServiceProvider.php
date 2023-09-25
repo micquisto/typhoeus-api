@@ -4,7 +4,7 @@ namespace Typhoeus\Api\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Routing\Router;
-use Typhoeus\Api\Helpers\TyphoeusApiHelper as Helper;
+use Typhoeus\Api\Helpers\ApiHelper as Helper;
 
 class RouteServiceProvider extends ServiceProvider
 {

@@ -2,7 +2,14 @@
 return [
     'requests' => [
         'types' => [
-            'getPriceAndAvail'
+            'getPriceAndAvail',
+            'simpleOrderRequest',
+            'order' => [
+                'simpleOrderRequest'
+            ],
+            'product' => [
+                'getPriceAndAvail'
+            ]
         ]
     ]
 ];
