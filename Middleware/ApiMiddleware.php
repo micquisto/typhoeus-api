@@ -8,23 +8,24 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
-use Typhoeus\Api\Models\TyphoeusUserHash;
-use Typhoeus\Api\Helpers\TyphoeusApiHelper as Helper;
+use Typhoeus\Api\Models\Typhoeus\UserHash;
 
 class ApiMiddleware
 {
     /**
-     * @var TyphoeusUserHash
+     * @var UserHash
      */
     protected $userHash;
-    
+
 
     /**
-     * 
+     * @param UserHash $userHash
      */
-    public function __construct()
+    public function __construct(
+        UserHash $userHash
+    )
     {
-        $this->userHash = new TyphoeusUserHash();
+        $this->userHash = $userHash;
     }
     
     /**
@@ -35,8 +36,6 @@ class ApiMiddleware
      * @return Application|Redirector|RedirectResponse
      */
     public function handle(Request $request, Closure $next) {
-	    //dd(json_encode($request->all()));
-	//dd($request->getContent());
         $invalid = false;
         $message = "";
         $code = 404;
@@ -55,22 +54,11 @@ class ApiMiddleware
             $message = 'Permission denied!!!';
             $code = 400;
         }
-        $requestTypes = config(Helper::getPackageName() . '::apirequest.requests.types');
-        if(!$request['requestType'] && ! $invalid) {
+        if(!$request['requestType'] && !$invalid) {
             $invalid = true;
             $message = 'Missing requestType.';
-        } else if(!in_array($request['requestType'], $requestTypes) && !$invalid) {
-            $invalid = true;
-            $message = 'Invalid requestType.';
-        } else if (!$request['shippingZip'] && !$invalid) {
-            $invalid = true;
-            $message = 'Missing shippingZip.';
-            $code = 400;
-        }  else if (!$request['products'] && !$invalid) {
-            $invalid = true;
-            $message = 'Missing products.';
-            $code = 400;
         }
+
         if($invalid) {
             $response = [
                 'success'   => false,

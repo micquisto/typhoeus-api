@@ -16,6 +16,7 @@ class ApiProductsController extends Controller
      * @var TyphoeusUserSession
      */
     protected $userSession;
+
     /**
      * @param Request $request
      * @return JsonResponse
@@ -31,7 +32,6 @@ class ApiProductsController extends Controller
         $products = new TyphoeusProducts();
         if(($p = $products->getProducts($ids, $dataType, $zip)) !== false) {
             $hashSessionData = $this->createSessionData($request);
-            $sessionId = $hashSessionData['session_id'];
             $request_id = $hashSessionData['request_id'];
             $response->requestId = $request_id;
             $response->products = $p;

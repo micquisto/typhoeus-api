@@ -2,13 +2,12 @@
 
 namespace Typhoeus\Api\Models;
 
-use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Contracts\Foundation\Application;
-use Jenssegers\Mongodb\Eloquent\Model;
-use Typhoeus\Api\Helpers\TyphoeusApiHelper as Helper;
+use Typhoeus\Api\Models\MongodbModel;
+use Typhoeus\Api\Helpers\ApiHelper as Helper;
 use  Typhoeus\Catalog\Product;
 use Typhoeus\Catalog\Checkout\ShippingMethod\Connectship;
-class TyphoeusProducts extends Model
+use Typhoeus\Api\Models\Typhoeus\Locations;
+class TyphoeusProducts extends MongodbModel
 {
     /**
      * @var string
@@ -31,14 +30,14 @@ class TyphoeusProducts extends Model
     protected $productData;
 
     /**
-     * @var TyphoeusLocations
+     * @var Locations
      */
     protected $vendors;
 
     /**
-     * @var TyphoeusLocations
+     * @var Locations
      */
-    protected $vendor;
+    protected $vendorLocations;
 
     /**
      * @var Helper 
@@ -56,13 +55,21 @@ class TyphoeusProducts extends Model
     protected $ship;
 
     /**
+     * @var string
+     */
+    protected $orderLocation = "";
+
+    /**
      * @var
      */
     protected $zip;
 
+    /**
+     *
+     */
     public function __construct()
     {
-        $this->vendor = new TyphoeusLocations();
+        $this->vendorLocations = new Locations();
         $this->helper = new Helper();
         $this->product = new Product();
         $this->ship = new Connectship();
@@ -88,7 +95,7 @@ class TyphoeusProducts extends Model
      */
     protected function generateVendors(): TyphoeusProducts
     {
-        $model = $this->vendor;
+        $model = $this->vendorLocations;
         $this->vendors = $model->getLocations();
         return $this;
     }
@@ -96,10 +103,11 @@ class TyphoeusProducts extends Model
 
     /**
      * @param $ids
-     * @return array
-     * @throws BindingResolutionException
+     * @param string $type
+     * @param $zip
+     * @return array|false
      */
-    public function getProducts($ids, $type = "sku", $zip = null)
+    public function getProducts($ids, string $type = "sku", $zip = null)
     {
         $this->zip = $zip;
         if($type = $this->helper->getDataType($type)) {
@@ -118,6 +126,84 @@ class TyphoeusProducts extends Model
         }
         return false;
 
+    }
+
+    /**
+     * @param $ids
+     * @param string $type
+     * @return array|false
+     */
+    public function getProductsById($ids, string $type = "sku")
+    {
+        if($type = $this->helper->getDataType($type)) {
+            if(!is_array($ids)) $ids = [$ids];
+            //$data = $this->select('productId','inventory')->latest()->paginate(2);
+            $data = $this->select('productId','inventory', 'dimensions')
+                ->whereIn($type, $ids)->orderBy($type, 'DESC')->get();
+            $data = $data->map(function ($product) {
+                return $this->buildProductData($product);
+            });
+            $output = [];
+            foreach($data as $item) {
+                $output[$item->productId] = $item;
+            }
+            return $output;
+        }
+        return false;
+
+    }
+
+    /**
+     * @param $ids
+     * @param $type
+     * @param $vendor
+     * @return $this
+     */
+    public function getProductsByIdRaw($ids, $type, $vendor)
+    {
+        if($type = $this->helper->getDataType($type)) {
+            if(!is_array($ids)) $ids = [$ids];
+            $this->orderLocation = $vendor;
+            $data = $this->select('*')
+                ->whereIn($type, $ids)->orderBy($type, 'DESC')->get();
+            $data = $data->map(function ($attribute) {
+                return $this->buildRawItems($attribute);
+            });
+            if($data !== null) {
+                return $data;
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @param $attribute
+     * @return mixed
+     */
+    protected function buildRawItems($attribute)
+    {
+        $inventory = $attribute->inventory;
+        $vendor = $attribute->vendor;
+        $item = $this->app->make('stdClass');
+        $item->productId = $attribute->productId;
+        $item->title = $attribute->title;
+        $item->priceLine = $attribute->priceLine;
+        $item->price = $attribute->pricing['price'];
+        //echo $attribute->pricing['price'];
+        $item->vendor = $vendor;
+        $item->leadtime = $attribute->leadtime;
+        $item->weight = $attribute->dimensions['weight'] ?? 0;
+        if(isset($inventory['availability'])){
+            $availability = $inventory['availability'];
+            if(isset($availability[$this->orderLocation])) {
+                $item->availableQty = $availability[$this->orderLocation]['qty'];
+                $item->price = $availability[$this->orderLocation]['price']==0?
+                    $item->price:$availability[$this->orderLocation]['price'];
+            } else {
+                $item->availableQty = 0;
+            }
+        }
+        return $item;
     }
 
 
